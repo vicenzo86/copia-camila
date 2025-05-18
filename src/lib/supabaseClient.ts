@@ -1,7 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = "https://mkkblunwukwdxpxqwavd.supabase.co";
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ra2JsdW53dWt3ZHhweHF3YXZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY4NDUwMjUsImV4cCI6MjA2MjQyMTAyNX0.CLJLfp3cjrtCYc6FxxCKmaNpn6VVbMtFjuLjK5kOhC4";
+// Credenciais atualizadas fornecidas pelo usuário
+const supabaseUrl = "https://kjgfdmyauopdoxumvqxy.supabase.co";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqZ2ZkbXlhdW9wZG94dW12cXh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcxMDYzNjYsImV4cCI6MjA2MjY4MjM2Nn0.r2rw2USkNlFLFoZtqDJuyRWRmtCrzq1WVVB7_0fJxtI";
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Criação do cliente Supabase com tratamento de erro
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: false // Evita problemas de sessão em ambientes serverless
+  }
+});
 
