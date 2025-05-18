@@ -1,12 +1,12 @@
 import { supabase } from "@/lib/supabaseClient";
 import { Construction, ConstructionFilter, StatusValue } from "@/types/construction";
 
-// Nome da tabela no Supabase
-const TABLE_NAME = "constructions"; 
+// Nome da tabela no Supabase com schema
+const TABLE_NAME = "construleads.constructions";
 
 const mapSupabaseDataToConstruction = (data: any): Construction => {
   return {
-    id: data.id || data["Nome do Arquivo"], 
+    id: data.id || data["Nome do Arquivo"],
     "Nome do Arquivo": data["Nome do Arquivo"],
     "Data": data["Data"],
     "Tipo de Licença": data["Tipo de Licença"],
@@ -18,7 +18,7 @@ const mapSupabaseDataToConstruction = (data: any): Construction => {
     "Área do Terreno": parseFloat(data["Área do Terreno"]) || 0,
     latitude: parseFloat(data.latitude) || 0,
     longitude: parseFloat(data.longitude) || 0,
-    status: data.status as StatusValue // Mapeando o novo campo status
+    status: data.status as StatusValue
   } as Construction;
 };
 
@@ -56,8 +56,6 @@ export const filterConstructions = async (
 ): Promise<Construction[]> => {
   let query = supabase.from(TABLE_NAME).select("*");
 
-  // Reintegrando o filtro por status
-  // Assumindo que a coluna no Supabase se chama 'status' (em minúsculas)
   if (filter.status && filter.status !== "all") {
     query = query.eq("status", filter.status);
   }
@@ -81,9 +79,11 @@ export const filterConstructions = async (
 
   if (filter.search && filter.search.trim() !== "") {
     const searchTerm = `%${filter.search.toLowerCase()}%`;
-    query = query.or(
-      `\"Endereço\".ilike.${searchTerm},\"Nome da Empresa\".ilike.${searchTerm},\"Cidade\".ilike.${searchTerm}`
-    );
+    query = query.or([
+      { "Endereço": { ilike: searchTerm } },
+      { "Nome da Empresa": { ilike: searchTerm } },
+      { "Cidade": { ilike: searchTerm } }
+    ]);
   }
 
   const { data, error } = await query;
@@ -94,4 +94,3 @@ export const filterConstructions = async (
   }
   return data ? data.map(mapSupabaseDataToConstruction) : [];
 };
-
