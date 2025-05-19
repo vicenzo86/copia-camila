@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Construction } from "@/types/construction";
 import { toast } from "@/components/ui/use-toast";
 import { createMapMarker } from "@/components/MapMarker";
@@ -32,86 +32,61 @@ export const useMapbox = ({
   const [mapboxToken] = useState<string>(DEFAULT_MAPBOX_TOKEN);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
-  const [mapboxSupported, setMapboxSupported] = useState(true); // Sempre assume suporte
+  const [mapboxSupported, setMapboxSupported] = useState(true);
   const [mapboxScriptLoaded, setMapboxScriptLoaded] = useState(false);
-  const [checkedSupport, setCheckedSupport] = useState(false);
-  const [renderAttempts, setRenderAttempts] = useState(0);
-  const maxRenderAttempts = 3; // Aumentado para mais tentativas
+  const initializationAttempted = useRef(false);
 
-  // Effect to check for Mapbox GL script
+  // Verificar se o script do Mapbox está carregado
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    
     let scriptCheckInterval: NodeJS.Timeout;
-
+    
     const verifyMapboxScript = () => {
-      if (typeof window !== "undefined" && window.mapboxgl) {
+      if (window.mapboxgl) {
         console.log("Mapbox GL script loaded.");
         setMapboxScriptLoaded(true);
         if (scriptCheckInterval) clearInterval(scriptCheckInterval);
-
-        // Sempre definir como suportado, ignorando a verificação de WebGL
-        setMapboxSupported(true);
-        setCheckedSupport(true);
       } else {
         console.log("Mapbox GL script not yet loaded, checking again...");
       }
     };
-
-    // Initial check
+    
     verifyMapboxScript();
-
-    // Fallback interval check if not immediately available
-    if (typeof window !== "undefined" && !window.mapboxgl) {
+    
+    if (!window.mapboxgl) {
       scriptCheckInterval = setInterval(verifyMapboxScript, 500);
     }
-
+    
     return () => {
       if (scriptCheckInterval) clearInterval(scriptCheckInterval);
     };
   }, []);
 
-  // Initialize map
-  useEffect(() => {
-    if (!mapboxScriptLoaded || !mapContainer.current || !mapboxToken || !checkedSupport || renderAttempts >= maxRenderAttempts) {
-      console.log("Map initialization skipped:", {
-        mapboxScriptLoaded,
-        hasContainer: !!mapContainer.current,
-        hasToken: !!mapboxToken,
-        checkedSupport,
-        mapboxSupported,
-        renderAttempts,
-      });
-      return;
-    }
-
-    if (map.current) {
-      map.current.remove();
-      map.current = null;
+  // Inicializar o mapa - usando useCallback para evitar recriação da função
+  const initializeMap = useCallback(() => {
+    if (!mapContainer.current || !mapboxToken || !mapboxScriptLoaded || !window.mapboxgl) {
+      return false;
     }
 
     try {
       console.log("Initializing Mapbox with token:", mapboxToken);
       window.mapboxgl.accessToken = mapboxToken;
-      // Definir workerCount para 2 para melhor desempenho
-      window.mapboxgl.workerCount = 2;
-
-      // Usar estilo mais leve para melhor compatibilidade
-      const mapStyle = "mapbox://styles/mapbox/light-v11";
-
+      
       const newMap = new window.mapboxgl.Map({
         container: mapContainer.current,
-        style: mapStyle,
+        style: "mapbox://styles/mapbox/light-v11",
         center: center,
         zoom: zoom,
         attributionControl: true,
         preserveDrawingBuffer: true,
-        antialias: false, // Desativar antialiasing para melhor desempenho
+        antialias: false,
         fadeDuration: 0,
         maxZoom: 19,
         minZoom: 3,
         pitch: 0,
         renderWorldCopies: true,
         maxParallelImageRequests: 4
-        // Removido o transformRequest que estava causando o problema
       });
 
       newMap.addControl(
@@ -131,25 +106,16 @@ export const useMapbox = ({
 
       newMap.on("error", (e: any) => {
         console.error("Mapbox error details:", e);
-        
-        // Tentar novamente com outro estilo de mapa se falhar
-        if (renderAttempts < maxRenderAttempts - 1) {
-          console.log(`Retry attempt ${renderAttempts + 1} of ${maxRenderAttempts}`);
-          setRenderAttempts((prev) => prev + 1);
-          return;
-        }
-        
-        // Após todas as tentativas, mostrar erro
         setMapError("Erro ao carregar o mapa. Usando visualização alternativa.");
         toast({
           title: "Erro ao carregar o mapa",
-          description:
-            "Não foi possível carregar o mapa. Usando visualização alternativa.",
+          description: "Não foi possível carregar o mapa. Usando visualização alternativa.",
           variant: "destructive",
         });
       });
 
       map.current = newMap;
+      return true;
     } catch (error) {
       console.error("Error initializing Mapbox map:", error);
       setMapError("Erro ao inicializar o mapa. Usando visualização alternativa.");
@@ -161,26 +127,35 @@ export const useMapbox = ({
         });
       }
       
-      // Tentar novamente se ainda houver tentativas disponíveis
-      if (renderAttempts < maxRenderAttempts - 1) {
-        console.log(`Retry attempt ${renderAttempts + 1} of ${maxRenderAttempts} after error`);
-        setRenderAttempts((prev) => prev + 1);
-      }
+      return false;
     }
+  }, [mapboxToken, center, zoom, mapboxScriptLoaded]);
 
+  // Efeito para inicializar o mapa apenas uma vez
+  useEffect(() => {
+    // Verificar se já tentamos inicializar antes para evitar loops
+    if (initializationAttempted.current) return;
+    
+    // Marcar que tentamos inicializar
+    initializationAttempted.current = true;
+    
+    if (mapboxScriptLoaded && mapContainer.current) {
+      initializeMap();
+    }
+    
     return () => {
-      markers.current.forEach((marker) => marker.remove());
-      markers.current = [];
       if (map.current) {
+        markers.current.forEach((marker) => marker.remove());
+        markers.current = [];
         map.current.remove();
         map.current = null;
       }
     };
-  }, [mapboxScriptLoaded, mapboxToken, center, zoom, checkedSupport, renderAttempts]);
+  }, [mapboxScriptLoaded, initializeMap]);
 
-  // Add markers to map
+  // Adicionar marcadores ao mapa
   useEffect(() => {
-    if (!map.current || !mapLoaded || !mapboxToken || !mapboxScriptLoaded) return;
+    if (!map.current || !mapLoaded || !constructions.length) return;
 
     markers.current.forEach((marker) => marker.remove());
     markers.current = [];
@@ -199,7 +174,7 @@ export const useMapbox = ({
         console.error("Error adding marker:", error);
       }
     });
-  }, [constructions, mapboxToken, onMarkerClick, mapLoaded, mapboxScriptLoaded]);
+  }, [constructions, onMarkerClick, mapLoaded]);
 
   return {
     mapContainer,
