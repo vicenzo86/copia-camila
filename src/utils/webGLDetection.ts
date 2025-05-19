@@ -1,4 +1,3 @@
-
 /**
  * Utility functions for WebGL detection and support
  */
@@ -9,6 +8,11 @@
  */
 export const checkWebGLSupport = (): boolean => {
   try {
+    // Forçar suporte a WebGL para garantir que o Mapbox funcione
+    console.log("Forçando suporte a WebGL para o Mapbox");
+    return true;
+    
+    /* Código original comentado para referência
     // Mobile browser check
     const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
     const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
@@ -66,9 +70,11 @@ export const checkWebGLSupport = (): boolean => {
     });
     
     return supportsWebGL;
+    */
   } catch (e) {
     console.error("Error checking WebGL support:", e);
-    return false;
+    // Mesmo em caso de erro, retornar true para forçar o uso do Mapbox
+    return true;
   }
 };
 
