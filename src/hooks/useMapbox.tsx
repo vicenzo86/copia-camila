@@ -10,7 +10,7 @@ declare global {
   }
 }
 
-const DEFAULT_MAPBOX_TOKEN = "pk.eyJ1IjoidmljZW56bzE5ODYiLCJhIjoiY21hdWoxbTM3MGJ2ODJsbXg2MWtjanp0NiJ9.2FhYsW6SA7Uls-kaYcEh5g";
+const DEFAULT_MAPBOX_TOKEN = "sk.eyJ1IjoidmljZW56bzE5ODYiLCJhIjoiY21hdWpueWoxMTZ5YzJtb2Z2MzAxcHl6diJ9.y4oUGk7FYmncbQFAayKubw";
 
 interface UseMapboxProps {
   constructions: Construction[];
@@ -153,7 +153,7 @@ export const useMapbox = ({
       });
 
       newMap.on("error", (e: any) => {
-        console.error("Mapbox error:", e);
+        console.error("Mapbox error details:", e);
         if (renderAttempts < maxRenderAttempts - 1) {
           console.log(`Retry attempt ${renderAttempts + 1} of ${maxRenderAttempts}`);
           setRenderAttempts((prev) => prev + 1);
