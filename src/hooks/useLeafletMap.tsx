@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { Construction } from "@/types/construction";
 import { toast } from "@/components/ui/use-toast";
 
@@ -29,6 +29,14 @@ export const useLeafletMap = ({
   const [mapError, setMapError] = useState<string | null>(null);
   const [leafletLoaded, setLeafletLoaded] = useState(false);
   const initializationAttempted = useRef(false);
+  const mapInitialized = useRef(false);
+  
+  // Memorizar as construções para evitar re-renderizações desnecessárias
+  const memoizedConstructions = useMemo(() => constructions, [JSON.stringify(constructions)]);
+  
+  // Memorizar o centro e zoom para evitar re-renderizações desnecessárias
+  const memoizedCenter = useMemo(() => center, [center?.[0], center?.[1]]);
+  const memoizedZoom = useMemo(() => zoom, [zoom]);
 
   // Carregar o Leaflet
   useEffect(() => {
@@ -68,17 +76,23 @@ export const useLeafletMap = ({
     };
   }, []);
 
-  // Inicializar o mapa
+  // Inicializar o mapa - IMPORTANTE: removido center e zoom das dependências
   useEffect(() => {
-    if (!leafletLoaded || !mapContainer.current || initializationAttempted.current) return;
+    if (!leafletLoaded || !mapContainer.current || mapInitialized.current) return;
     
-    initializationAttempted.current = true;
+    // Marcar que estamos inicializando o mapa
+    mapInitialized.current = true;
     
     try {
       console.log("Initializing Leaflet map");
       
-      // Criar o mapa
-      const newMap = window.L.map(mapContainer.current).setView(center, zoom);
+      // Criar o mapa com opções para evitar animações
+      const newMap = window.L.map(mapContainer.current, {
+        fadeAnimation: false,
+        zoomAnimation: false,
+        markerZoomAnimation: false,
+        preferCanvas: true
+      }).setView(memoizedCenter, memoizedZoom);
       
       // Adicionar camada de tiles (OpenStreetMap)
       window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -91,6 +105,15 @@ export const useLeafletMap = ({
       }).addTo(newMap);
       
       map.current = newMap;
+      
+      // Forçar recálculo do tamanho do mapa após um pequeno delay
+      setTimeout(() => {
+        if (map.current) {
+          map.current.invalidateSize();
+          console.log("Map size recalculated");
+        }
+      }, 100);
+      
       setMapLoaded(true);
       setMapError(null);
       
@@ -112,16 +135,31 @@ export const useLeafletMap = ({
     
     return () => {
       if (map.current) {
+        console.log("Cleaning up map instance");
         map.current.remove();
         map.current = null;
         markers.current = [];
+        mapInitialized.current = false;
       }
     };
-  }, [leafletLoaded, center, zoom]);
+  }, [leafletLoaded]); // IMPORTANTE: removido center e zoom das dependências
+
+  // Atualizar centro e zoom quando mudarem, sem reinicializar o mapa
+  useEffect(() => {
+    if (!map.current || !mapLoaded) return;
+    
+    try {
+      map.current.setView(memoizedCenter, memoizedZoom, {
+        animate: false // Desativar animação para evitar piscadas
+      });
+    } catch (error) {
+      console.error("Error updating map view:", error);
+    }
+  }, [memoizedCenter, memoizedZoom, mapLoaded]);
 
   // Adicionar marcadores ao mapa
   useEffect(() => {
-    if (!map.current || !mapLoaded || !constructions.length || !window.L) return;
+    if (!map.current || !mapLoaded || !memoizedConstructions.length || !window.L) return;
 
     // Limpar marcadores existentes
     markers.current.forEach((marker) => {
@@ -130,7 +168,7 @@ export const useLeafletMap = ({
     markers.current = [];
 
     // Adicionar novos marcadores
-    constructions.forEach((construction) => {
+    memoizedConstructions.forEach((construction) => {
       try {
         if (!construction.latitude || !construction.longitude) return;
         
@@ -172,7 +210,14 @@ export const useLeafletMap = ({
         console.error("Error adding marker:", error);
       }
     });
-  }, [constructions, onMarkerClick, mapLoaded]);
+    
+    // Forçar recálculo do tamanho do mapa após adicionar marcadores
+    if (map.current) {
+      setTimeout(() => {
+        map.current.invalidateSize();
+      }, 50);
+    }
+  }, [memoizedConstructions, onMarkerClick, mapLoaded]);
 
   // Função auxiliar para determinar a cor do marcador com base no status
   function getMarkerColor(status: string | undefined): string {
@@ -193,6 +238,23 @@ export const useLeafletMap = ({
         return '#999999'; // Cinza
     }
   }
+
+  // Adicionar um efeito para recalcular o tamanho do mapa quando a janela for redimensionada
+  useEffect(() => {
+    if (!map.current || !mapLoaded) return;
+    
+    const handleResize = () => {
+      if (map.current) {
+        map.current.invalidateSize();
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [mapLoaded]);
 
   return {
     mapContainer,

@@ -1,3 +1,4 @@
+import React, { useMemo } from "react";
 import { useLeafletMap } from "@/hooks/useLeafletMap";
 import { Construction } from "@/types/construction";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -10,21 +11,24 @@ interface MapProps {
   zoom?: number;
 }
 
-export function Map({
+function MapComponent({
   constructions,
   onMarkerClick,
   center,
   zoom,
 }: MapProps) {
-  const { mapContainer, mapLoaded, mapError } = useLeafletMap({
+  // Use useMemo para evitar recálculos desnecessários das props
+  const mapProps = useMemo(() => ({
     constructions,
     onMarkerClick,
     center,
     zoom,
-  });
+  }), [constructions, onMarkerClick, center, zoom]);
+
+  const { mapContainer, mapLoaded, mapError } = useLeafletMap(mapProps);
 
   return (
-    <div className="relative w-full h-full min-h-[400px]">
+    <div className="relative w-full h-full" style={{ minHeight: "500px", position: "relative" }}>
       {mapError && (
         <Alert variant="destructive" className="mb-4">
           <AlertCircle className="h-4 w-4" />
@@ -35,7 +39,14 @@ export function Map({
       
       <div
         ref={mapContainer}
-        className="w-full h-full min-h-[400px] rounded-md overflow-hidden"
+        className="w-full h-full rounded-md overflow-hidden"
+        style={{ 
+          height: "500px", 
+          position: "relative",
+          zIndex: 1,
+          visibility: "visible",
+          opacity: 1
+        }}
       />
       
       {/* Adicione este CSS inline para os marcadores personalizados */}
@@ -79,3 +90,9 @@ export function Map({
     </div>
   );
 }
+
+// Aplicar React.memo para evitar renderizações desnecessárias
+export const Map = React.memo(MapComponent);
+
+// Exportar também como exportação nomeada para compatibilidade
+export { Map as default };
