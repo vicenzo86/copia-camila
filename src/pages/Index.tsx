@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import Map from '@/components/Map';
+import { Map } from '@/components/Map';
 import FilterBar from '@/components/FilterBar';
 import CategoryScroller from '@/components/CategoryScroller';
 import ConstructionCard from '@/components/ConstructionCard';
