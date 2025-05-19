@@ -10,7 +10,7 @@ declare global {
   }
 }
 
-const DEFAULT_MAPBOX_TOKEN = "pk.eyJ1IjoidmljZW56bzE5ODYiLCJhIjoiY21hOTJ1dDk3MW43ajJwcHdtancwbG9zbSJ9.TTMx21fG8mpx04i1h2hl-Q";
+const DEFAULT_MAPBOX_TOKEN = "pk.eyJ1IjoidmljZW56bzE5ODYiLCJhIjoiY21hdWoxbTM3MGJ2ODJsbXg2MWtjanp0NiJ9.2FhYsW6SA7Uls-kaYcEh5g";
 
 interface UseMapboxProps {
   constructions: Construction[];
@@ -114,7 +114,7 @@ export const useMapbox = ({
     try {
       console.log("Initializing Mapbox with token:", mapboxToken);
       window.mapboxgl.accessToken = mapboxToken;
-      window.mapboxgl.workerCount = 0; // Keep workers disabled as per previous attempt
+      window.mapboxgl.workerCount = 2;
 
       const mapStyle =
         renderAttempts > 0
