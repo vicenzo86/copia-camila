@@ -1,67 +1,81 @@
-
-import React from 'react';
-import 'mapbox-gl/dist/mapbox-gl.css';
-import { Construction } from '@/types/construction';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import MapFallbackView from '@/components/MapFallbackView';
-import { useMapbox } from '@/hooks/useMapbox';
-import { isMobileDevice } from '@/utils/webGLDetection';
+import { useLeafletMap } from "@/hooks/useLeafletMap";
+import { Construction } from "@/types/construction";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface MapProps {
   constructions: Construction[];
   onMarkerClick?: (construction: Construction) => void;
-  className?: string;
   center?: [number, number];
   zoom?: number;
 }
 
-const Map: React.FC<MapProps> = ({ 
-  constructions, 
-  onMarkerClick, 
-  className,
-  center = [-49.6401, -27.2423],
-  zoom = 9
-}) => {
-  const {
-    mapContainer,
-    mapboxSupported,
-    mapError,
-    mapLoaded
-  } = useMapbox({
+export function Map({
+  constructions,
+  onMarkerClick,
+  center,
+  zoom,
+}: MapProps) {
+  const { mapContainer, mapLoaded, mapError } = useLeafletMap({
     constructions,
     onMarkerClick,
     center,
-    zoom
+    zoom,
   });
 
-  const isMobile = isMobileDevice();
-
-  // Console log para debugging
-  console.log('Map rendering status:', { mapboxSupported, mapError, isMobile });
-
   return (
-    <div className={cn('relative w-full h-[500px] min-h-[500px] rounded-lg overflow-hidden', className)}>
-      {!mapboxSupported ? (
-        <MapFallbackView 
-          constructions={constructions} 
-          error={mapError} 
-          onMarkerClick={onMarkerClick} 
-        />
-      ) : null}
-      <div 
-        ref={mapContainer} 
-        className={`map-container h-[500px] ${!mapboxSupported ? 'hidden' : ''}`} 
-        style={{ minHeight: '500px' }}
-        data-is-mobile={isMobile ? "true" : "false"}
-      />
-      {mapError && mapboxSupported && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white px-4 py-2 rounded-full shadow-lg text-sm">
-          Erro no mapa. <Button variant="link" className="p-0 h-auto" onClick={() => window.location.reload()}>Recarregar</Button>
-        </div>
+    <div className="relative w-full h-full min-h-[400px]">
+      {mapError && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Erro</AlertTitle>
+          <AlertDescription>{mapError}</AlertDescription>
+        </Alert>
       )}
+      
+      <div
+        ref={mapContainer}
+        className="w-full h-full min-h-[400px] rounded-md overflow-hidden"
+      />
+      
+      {/* Adicione este CSS inline para os marcadores personalizados */}
+      <style jsx global>{`
+        .custom-marker {
+          background: none;
+          border: none;
+        }
+        .marker-pin {
+          width: 30px;
+          height: 30px;
+          border-radius: 50% 50% 50% 0;
+          background: #c30b82;
+          position: absolute;
+          transform: rotate(-45deg);
+          left: 50%;
+          top: 50%;
+          margin: -15px 0 0 -15px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .marker-pin::after {
+          content: '';
+          width: 24px;
+          height: 24px;
+          margin: 3px 0 0 3px;
+          background: #fff;
+          position: absolute;
+          border-radius: 50%;
+        }
+        .marker-text {
+          transform: rotate(45deg);
+          color: #000;
+          font-weight: bold;
+          font-size: 12px;
+          position: relative;
+          z-index: 1;
+        }
+      `}</style>
     </div>
   );
-};
-
-export default Map;
+}
