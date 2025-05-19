@@ -10,8 +10,8 @@ declare global {
   }
 }
 
-// Token público do Mapbox (substitua pelo token público correto)
-const DEFAULT_MAPBOX_TOKEN = "pk.eyJ1IjoidmljZW56bzE5ODYiLCJhIjoiY21hOTJ1dDk3MW43ajJwcHdtancwbG9zbSJ9.TTMx21fG8mpx04i1h2hl-Q";
+// Token público do Mapbox atualizado
+const DEFAULT_MAPBOX_TOKEN = "pk.eyJ1IjoidmljZW56bzE5ODYiLCJhIjoiY21hdWxuODBxMHE3czJvbzlpajdhc3R0ciJ9.Stj-wArKkPC-b6YPWtE-nw";
 
 interface UseMapboxProps {
   constructions: Construction[];
@@ -110,17 +110,8 @@ export const useMapbox = ({
         minZoom: 3,
         pitch: 0,
         renderWorldCopies: true,
-        maxParallelImageRequests: 4,
-        transformRequest: (url: string, resourceType: string) => {
-          // Adicionar cabeçalhos CORS para evitar problemas de acesso
-          return {
-            url: url,
-            headers: {
-              'Authorization': `Bearer ${mapboxToken}`,
-              'Content-Type': 'application/json'
-            }
-          };
-        }
+        maxParallelImageRequests: 4
+        // Removido o transformRequest que estava causando o problema
       });
 
       newMap.addControl(
