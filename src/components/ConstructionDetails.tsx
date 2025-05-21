@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Construction, StatusValue } from '@/types/construction';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale/pt-BR';
 import { Building2, CalendarDays, MapPin, FileText, ExternalLink, Briefcase, Info, CheckCircle, HelpCircle, AlertTriangle } from 'lucide-react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 interface ConstructionDetailsProps {
   construction: Construction | null;
@@ -29,6 +31,79 @@ const getStatusBadgeProps = (status: StatusValue): { variant: "default" | "outli
 };
 
 const ConstructionDetails: React.FC<ConstructionDetailsProps> = ({ construction, open, onOpenChange }) => {
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 0);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const leafletMapRef = useRef<L.Map | null>(null);
+  
+  // Efeito para detectar o tamanho da tela e ajustar o tamanho do diálogo
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  // Efeito para inicializar o mapa Leaflet quando o popup estiver aberto
+  useEffect(() => {
+    if (!open || !construction || !mapRef.current) return;
+    
+    // Limpar mapa anterior se existir
+    if (leafletMapRef.current) {
+      leafletMapRef.current.remove();
+      leafletMapRef.current = null;
+    }
+    
+    const { latitude, longitude } = construction;
+    
+    if (!latitude || !longitude) return;
+    
+    // Pequeno timeout para garantir que o DOM esteja pronto
+    setTimeout(() => {
+      if (!mapRef.current) return;
+      
+      // Inicializar mapa
+      const map = L.map(mapRef.current, {
+        center: [latitude, longitude],
+        zoom: 13,
+        zoomControl: false,
+        attributionControl: false,
+        dragging: false,
+        scrollWheelZoom: false,
+        doubleClickZoom: false,
+        touchZoom: false
+      });
+      
+      // Adicionar camada de tiles
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+      } ).addTo(map);
+      
+      // Adicionar marcador
+      L.marker([latitude, longitude]).addTo(map);
+      
+      // Guardar referência do mapa
+      leafletMapRef.current = map;
+      
+      // Forçar atualização do mapa após renderização
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 100);
+    }, 100);
+    
+    // Cleanup ao fechar o popup
+    return () => {
+      if (leafletMapRef.current) {
+        leafletMapRef.current.remove();
+        leafletMapRef.current = null;
+      }
+    };
+  }, [open, construction]);
+  
+  // Calcular largura do diálogo (70% da tela)
+  const dialogWidth = Math.min(windowWidth * 0.7, 500); // Máximo de 500px para não ficar muito grande em telas grandes
+  
   if (!construction) return null;
 
   const { 
@@ -75,78 +150,68 @@ const ConstructionDetails: React.FC<ConstructionDetailsProps> = ({ construction,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg p-0">
-        <DialogHeader className="p-6 pb-4">
-          <DialogTitle className="text-2xl font-semibold text-gray-800">{companyName || "Nome da Empresa"}</DialogTitle>
+      <DialogContent className="p-0" style={{ maxWidth: `${dialogWidth}px`, width: '100%', margin: '0 auto' }}>
+        <DialogHeader className="p-4 pb-2">
+          <DialogTitle className="text-xl font-semibold text-gray-800">{companyName || "Nome da Empresa"}</DialogTitle>
           <div className="flex items-center space-x-2 mt-1">
             <Badge variant={statusProps.variant} className={statusProps.className}>
               {statusProps.icon}
               {statusProps.label}
             </Badge>
-            <span className="text-gray-600">{primaryLicenseInfo}</span>
+            <span className="text-sm text-gray-600">{primaryLicenseInfo}</span>
           </div>
         </DialogHeader>
         
-        <div className="px-6 pb-6 space-y-5">
+        <div className="px-4 pb-4 space-y-3">
           <section>
-            <h4 className="text-sm font-medium text-gray-500 mb-2">Informações da Empresa</h4>
-            <div className="space-y-1.5">
+            <h4 className="text-xs font-medium text-gray-500 mb-1">Informações da Empresa</h4>
+            <div className="space-y-1">
               <div className="flex items-center text-gray-700">
-                <Briefcase className="h-4 w-4 mr-2.5 text-gray-400 flex-shrink-0" />
-                <span className="text-sm">CNPJ: {cnpj || "Não informado"}</span>
+                <Briefcase className="h-3.5 w-3.5 mr-2 text-gray-400 flex-shrink-0" />
+                <span className="text-xs">CNPJ: {cnpj || "Não informado"}</span>
               </div>
               <div className="flex items-start text-gray-700">
-                <MapPin className="h-4 w-4 mr-2.5 text-gray-400 flex-shrink-0 mt-0.5" />
-                <span className="text-sm">{(address || "Endereço não informado") + ", " + (city || "Cidade não informada")}</span>
+                <MapPin className="h-3.5 w-3.5 mr-2 text-gray-400 flex-shrink-0 mt-0.5" />
+                <span className="text-xs">{(address || "Endereço não informado") + ", " + (city || "Cidade não informada")}</span>
               </div>
             </div>
           </section>
           
-          <Separator />
+          <Separator className="my-2" />
           
           <section>
-            <h4 className="text-sm font-medium text-gray-500 mb-2">Detalhes da Licença</h4>
-            <div className="space-y-1.5">
+            <h4 className="text-xs font-medium text-gray-500 mb-1">Detalhes da Licença</h4>
+            <div className="space-y-1">
               <div className="flex items-center text-gray-700">
-                <CalendarDays className="h-4 w-4 mr-2.5 text-gray-400 flex-shrink-0" />
-                <span className="text-sm">Emitida em: {formattedDate}</span>
+                <CalendarDays className="h-3.5 w-3.5 mr-2 text-gray-400 flex-shrink-0" />
+                <span className="text-xs">Emitida em: {formattedDate}</span>
               </div>
               <div className="flex items-center text-gray-700">
-                <FileText className="h-4 w-4 mr-2.5 text-gray-400 flex-shrink-0" />
-                <span className="text-sm">{fileName || "Não informado"}</span>
+                <FileText className="h-3.5 w-3.5 mr-2 text-gray-400 flex-shrink-0" />
+                <span className="text-xs">{fileName || "Não informado"}</span>
               </div>
             </div>
           </section>
           
-          <Separator />
+          <Separator className="my-2" />
           
           <section>
-            <h4 className="text-sm font-medium text-gray-500 mb-2">Descrição</h4>
-            <div className="bg-gray-50 p-3 rounded-md">
-              <p className="text-sm text-gray-700">{descriptionText}</p>
+            <h4 className="text-xs font-medium text-gray-500 mb-1">Localização</h4>
+            <div className="space-y-1 mb-2">
+              <span className="text-xs text-gray-700">Lat: {latitude || "N/A"}, Lng: {longitude || "N/A"}</span>
             </div>
-          </section>
-          
-          <Separator />
-          
-          <section>
-            <h4 className="text-sm font-medium text-gray-500 mb-2">Localização</h4>
-            <div className="space-y-1.5 mb-3">
-              <span className="text-sm text-gray-700">Lat: {latitude || "N/A"}, Lng: {longitude || "N/A"}</span>
-            </div>
-            <div className="h-32 bg-gray-200 rounded-md flex items-center justify-center relative overflow-hidden">
-              <img 
-                src={`https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+0074D9(${longitude || 0},${latitude || 0} )/${longitude || 0},${latitude || 0},9,0/300x128?access_token=pk.eyJ1IjoidmljZW56bzE5ODYiLCJhIjoiY21hOTJ1dDk3MW43ajJwcHdtancwbG9zbSJ9.TTMx21fG8mpx04i1h2hl-Q`} 
-                alt="Miniatura do Mapa" 
-                className="w-full h-full object-cover" 
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
+            <div className="h-24 bg-gray-200 rounded-md flex items-center justify-center relative overflow-hidden">
+              {/* Mapa Leaflet */}
+              <div 
+                ref={mapRef} 
+                className="w-full h-full" 
+                style={{ zIndex: 1 }}
               />
+              
               {(address || (latitude && longitude)) && (
-                <Button variant="outline" size="sm" className="absolute bottom-2 right-2 bg-white hover:bg-gray-50 shadow-md" asChild>
+                <Button variant="outline" size="sm" className="absolute bottom-1 right-1 bg-white hover:bg-gray-50 shadow-md py-1 px-2 h-auto text-xs z-10" asChild>
                   <a href={getGoogleMapsLink()} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                    <ExternalLink className="h-3 w-3 mr-1" />
                     Ver no Google Maps
                   </a>
                 </Button>
@@ -155,9 +220,9 @@ const ConstructionDetails: React.FC<ConstructionDetailsProps> = ({ construction,
           </section>
         </div>
         
-        <DialogFooter className="p-6 pt-4 border-t">
-          <Button variant="outline" className="w-full">
-            <FileText className="h-4 w-4 mr-2" />
+        <DialogFooter className="p-3 pt-2 border-t">
+          <Button variant="outline" size="sm" className="w-full h-8 text-xs">
+            <FileText className="h-3.5 w-3.5 mr-1.5" />
             Ver Documento Completo
           </Button>
         </DialogFooter>
