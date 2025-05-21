@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale/pt-BR';
-import { Building2, CalendarDays, MapPin, FileText, ExternalLink, Briefcase, Info, CheckCircle, HelpCircle, AlertTriangle } from 'lucide-react'; // Adicionado CheckCircle, HelpCircle, AlertTriangle
+import { Building2, CalendarDays, MapPin, FileText, ExternalLink, Briefcase, Info, CheckCircle, HelpCircle, AlertTriangle } from 'lucide-react';
 
 interface ConstructionDetailsProps {
   construction: Construction | null;
@@ -14,7 +14,7 @@ interface ConstructionDetailsProps {
   onOpenChange: (open: boolean) => void;
 }
 
-// Helper function para obter props do badge de status (similar ao ConstructionCard)
+// Helper function para obter props do badge de status
 const getStatusBadgeProps = (status: StatusValue): { variant: "default" | "outline" | "secondary" | "destructive" | null | undefined, className: string, icon?: React.ReactNode, label: string } => {
   switch (status) {
     case "Aprovada":
@@ -24,34 +24,29 @@ const getStatusBadgeProps = (status: StatusValue): { variant: "default" | "outli
     case "Análise":
       return { variant: "outline", className: "border-yellow-500 text-yellow-700 bg-yellow-50", icon: <AlertTriangle className="h-3.5 w-3.5 mr-1" />, label: "Análise" };
     default:
-      return { variant: "outline", className: "border-gray-500 text-gray-700 bg-gray-50", label: status }; 
+      return { variant: "outline", className: "border-gray-500 text-gray-700 bg-gray-50", label: status };
   }
 };
 
-const ConstructionDetails: React.FC<ConstructionDetailsProps> = ({ 
-  construction, 
-  open,
-  onOpenChange
-}) => {
+const ConstructionDetails: React.FC<ConstructionDetailsProps> = ({ construction, open, onOpenChange }) => {
   if (!construction) return null;
 
-  const {
-    "Endereço": address,
-    status, // Agora é obrigatório e tem os novos valores
-    "Data": documentDate,
-    "Tipo de Licença": licenseType,
-    "Nome do Arquivo": fileName,
-    "CNPJ": cnpj,
-    "Nome da Empresa": companyName,
-    "Cidade": city,
-    latitude,
-    longitude,
-    "Área Construída": constructionArea,
-    "Área do Terreno": landArea
+  const { 
+    "Endereço": address, 
+    status,
+    "Data": documentDate, 
+    "Tipo de Licença": licenseType, 
+    "Nome do Arquivo": fileName, 
+    "CNPJ": cnpj, 
+    "Nome da Empresa": companyName, 
+    "Cidade": city, 
+    latitude, 
+    longitude, 
+    "Área Construída": constructionArea, 
+    "Área do Terreno": landArea 
   } = construction;
 
   const statusProps = getStatusBadgeProps(status);
-  // O primaryStatus pode ser o Tipo de Licença, e o status direto da coluna status é o principal agora.
   const primaryLicenseInfo = licenseType || "Não Informado";
 
   let formattedDate = "Data não informada";
@@ -59,7 +54,7 @@ const ConstructionDetails: React.FC<ConstructionDetailsProps> = ({
     try {
       const dateParts = documentDate.split('/');
       if (dateParts.length === 3) {
-        const isoDate = `${dateParts[0]}-${dateParts[1]}-${dateParts[2]}`;
+        const isoDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
         formattedDate = format(new Date(isoDate), "dd/MM/yyyy", { locale: ptBR });
       } else {
         formattedDate = format(new Date(documentDate), "dd/MM/yyyy", { locale: ptBR });
@@ -73,10 +68,10 @@ const ConstructionDetails: React.FC<ConstructionDetailsProps> = ({
     if (latitude && longitude) {
       return `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
     }
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((address || "") + ', ' + (city || ""))}`;
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((address || "" ) + ', ' + (city || ""))}`;
   };
-  
-  const descriptionText = `Detalhes sobre o licenciamento para ${companyName || "a empresa"}. Status atual: ${statusProps.label}. Consulte o documento para mais informações.`; 
+
+  const descriptionText = `Licença de Operação para ${companyName || "a empresa"}. Status atual: ${statusProps.label}.`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -88,10 +83,7 @@ const ConstructionDetails: React.FC<ConstructionDetailsProps> = ({
               {statusProps.icon}
               {statusProps.label}
             </Badge>
-            {/* Opcionalmente, mostrar o tipo de licença também se for diferente do status */}
-            {/* <Badge variant="outline" className="border-gray-400 text-gray-600 bg-gray-50">
-              {primaryLicenseInfo}
-            </Badge> */}
+            <span className="text-gray-600">{primaryLicenseInfo}</span>
           </div>
         </DialogHeader>
         
@@ -109,61 +101,47 @@ const ConstructionDetails: React.FC<ConstructionDetailsProps> = ({
               </div>
             </div>
           </section>
-
+          
           <Separator />
-
+          
           <section>
-            <h4 className="text-sm font-medium text-gray-500 mb-2">Detalhes da Licença/Processo</h4>
+            <h4 className="text-sm font-medium text-gray-500 mb-2">Detalhes da Licença</h4>
             <div className="space-y-1.5">
-               <div className="flex items-center text-gray-700">
-                <Info className="h-4 w-4 mr-2.5 text-gray-400 flex-shrink-0" />
-                <span className="text-sm">Tipo de Licença: {primaryLicenseInfo}</span>
-              </div>
               <div className="flex items-center text-gray-700">
                 <CalendarDays className="h-4 w-4 mr-2.5 text-gray-400 flex-shrink-0" />
-                <span className="text-sm">Data do Documento: {formattedDate}</span>
+                <span className="text-sm">Emitida em: {formattedDate}</span>
               </div>
               <div className="flex items-center text-gray-700">
                 <FileText className="h-4 w-4 mr-2.5 text-gray-400 flex-shrink-0" />
-                <span className="text-sm">Arquivo: {fileName || "Não informado"}</span>
+                <span className="text-sm">{fileName || "Não informado"}</span>
               </div>
-              {(constructionArea || landArea) && (
-                <>
-                  <div className="flex items-center text-gray-700">
-                    <Building2 className="h-4 w-4 mr-2.5 text-gray-400 flex-shrink-0" />
-                    <span className="text-sm">Área Construída: {constructionArea ? `${constructionArea} m²` : "N/A"}</span>
-                  </div>
-                  <div className="flex items-center text-gray-700">
-                    <MapPin className="h-4 w-4 mr-2.5 text-gray-400 flex-shrink-0" /> {/* Usando MapPin como placeholder para área do terreno */}
-                    <span className="text-sm">Área do Terreno: {landArea ? `${landArea} m²` : "N/A"}</span>
-                  </div>
-                </>
-              )}
             </div>
           </section>
           
           <Separator />
-
+          
           <section>
-            <h4 className="text-sm font-medium text-gray-500 mb-2">Descrição Adicional</h4>
+            <h4 className="text-sm font-medium text-gray-500 mb-2">Descrição</h4>
             <div className="bg-gray-50 p-3 rounded-md">
-                <p className="text-sm text-gray-700">{descriptionText}</p>
+              <p className="text-sm text-gray-700">{descriptionText}</p>
             </div>
           </section>
-
+          
           <Separator />
-
+          
           <section>
             <h4 className="text-sm font-medium text-gray-500 mb-2">Localização</h4>
             <div className="space-y-1.5 mb-3">
-                <span className="text-sm text-gray-700">Lat: {latitude || "N/A"}, Lng: {longitude || "N/A"}</span>
+              <span className="text-sm text-gray-700">Lat: {latitude || "N/A"}, Lng: {longitude || "N/A"}</span>
             </div>
             <div className="h-32 bg-gray-200 rounded-md flex items-center justify-center relative overflow-hidden">
               <img 
-                src={`https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+0074D9(${longitude || 0},${latitude || 0})/${longitude || 0},${latitude || 0},9,0/300x128?access_token=pk.eyJ1IjoidmljZW56bzE5ODYiLCJhIjoiY21hOTJ1dDk3MW43ajJwcHdtancwbG9zbSJ9.TTMx21fG8mpx04i1h2hl-Q`}
-                alt="Miniatura do Mapa"
-                className="w-full h-full object-cover"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} 
+                src={`https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+0074D9(${longitude || 0},${latitude || 0} )/${longitude || 0},${latitude || 0},9,0/300x128?access_token=pk.eyJ1IjoidmljZW56bzE5ODYiLCJhIjoiY21hOTJ1dDk3MW43ajJwcHdtancwbG9zbSJ9.TTMx21fG8mpx04i1h2hl-Q`} 
+                alt="Miniatura do Mapa" 
+                className="w-full h-full object-cover" 
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
               />
               {(address || (latitude && longitude)) && (
                 <Button variant="outline" size="sm" className="absolute bottom-2 right-2 bg-white hover:bg-gray-50 shadow-md" asChild>
@@ -176,11 +154,11 @@ const ConstructionDetails: React.FC<ConstructionDetailsProps> = ({
             </div>
           </section>
         </div>
-
+        
         <DialogFooter className="p-6 pt-4 border-t">
-          <Button variant="outline" className="w-full" disabled> 
+          <Button variant="outline" className="w-full">
             <FileText className="h-4 w-4 mr-2" />
-            Ver Documento Completo (Indisponível)
+            Ver Documento Completo
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -189,4 +167,3 @@ const ConstructionDetails: React.FC<ConstructionDetailsProps> = ({
 };
 
 export default ConstructionDetails;
-

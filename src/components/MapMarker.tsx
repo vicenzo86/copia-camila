@@ -1,4 +1,3 @@
-
 import { Construction } from '@/types/construction';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -14,16 +13,22 @@ interface MarkerOptions {
  * @param options Options for creating the marker
  * @returns The created Mapbox marker
  */
-export const createMapMarker = ({ 
-  map, 
-  construction, 
-  onMarkerClick,
-  mapboxgl 
-}: MarkerOptions): any => {
+export const createMapMarker = ({ map, construction, onMarkerClick, mapboxgl }: MarkerOptions): any => {
   const { latitude, longitude, status } = construction;
   
   if (!latitude || !longitude) {
     throw new Error('Invalid coordinates for marker');
+  }
+
+  // Determinar a cor do marcador com base no status
+  let markerColor = '#f59e0b'; // Amarelo/laranja padrão
+  
+  if (status === 'Aprovada') {
+    markerColor = '#10b981'; // Verde para aprovado
+  } else if (status === 'Análise') {
+    markerColor = '#f59e0b'; // Amarelo para análise
+  } else if (status === 'Consulta') {
+    markerColor = '#3b82f6'; // Azul para consulta
   }
 
   // Create custom marker element
@@ -32,7 +37,7 @@ export const createMapMarker = ({
   el.style.width = '32px';
   el.style.height = '32px';
   el.style.borderRadius = '50%';
-  el.style.background = status === 'approved' ? '#10b981' : '#f59e0b';
+  el.style.background = markerColor;
   el.style.display = 'flex';
   el.style.alignItems = 'center';
   el.style.justifyContent = 'center';
@@ -41,38 +46,18 @@ export const createMapMarker = ({
   el.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)';
   el.style.cursor = 'pointer';
   el.style.border = '2px solid white';
-  el.innerHTML = `<span>${construction.constructionArea}</span>`;
   
-  // Create the marker
+  // Criar o marcador
   const marker = new mapboxgl.Marker(el)
     .setLngLat([longitude, latitude])
     .addTo(map);
-    
-  // Add click event listener
+
+  // Adicionar evento de clique
   el.addEventListener('click', () => {
     if (onMarkerClick) {
       onMarkerClick(construction);
     }
-    
-    // Create popup content
-    const popupContent = `
-      <div class="font-medium">${construction.address}</div>
-      <div class="text-sm text-gray-600">
-        ${construction.companyName}
-      </div>
-      <div class="text-sm mt-2">
-        <span class="font-medium">Status:</span> 
-        <span class="${status === 'approved' ? 'text-green-600' : 'text-amber-600'}">
-          ${status === 'approved' ? 'Aprovada' : 'Em aprovação'}
-        </span>
-      </div>
-    `;
-    
-    new mapboxgl.Popup({ offset: 25 })
-      .setLngLat([longitude, latitude])
-      .setHTML(popupContent)
-      .addTo(map);
   });
-  
+
   return marker;
 };
