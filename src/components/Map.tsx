@@ -78,36 +78,21 @@ function MapComponent({
           background: none;
           border: none;
         }
-        .marker-pin {
-          width: 30px;
-          height: 30px;
-          border-radius: 50% 50% 50% 0;
-          background: #c30b82;
-          position: absolute;
-          transform: rotate(-45deg);
-          left: 50%;
-          top: 50%;
-          margin: -15px 0 0 -15px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .marker-pin::after {
-          content: '';
-          width: 24px;
-          height: 24px;
-          margin: 3px 0 0 3px;
-          background: #fff;
-          position: absolute;
-          border-radius: 50%;
-        }
-        .marker-text {
-          transform: rotate(45deg);
-          color: #000;
-          font-weight: bold;
-          font-size: 12px;
+        .marker-container {
           position: relative;
-          z-index: 1;
+          width: 40px;
+          height: 40px;
+        }
+        .marker-id {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          color: #fff;
+          font-weight: bold;
+          font-size: 10px;
+          text-shadow: 0px 0px 2px rgba(0,0,0,0.5);
+          z-index: 2;
         }
       `}</style>
     </div>
