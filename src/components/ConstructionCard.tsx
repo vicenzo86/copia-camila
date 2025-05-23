@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale/pt-BR';
-import { MapPin, Calendar, Building, ArrowRight, CheckCircle, HelpCircle, AlertTriangle } from 'lucide-react';
+import { MapPin, Calendar, Building, ArrowRight, CheckCircle, HelpCircle, AlertTriangle, FileText } from 'lucide-react';
 
 interface ConstructionCardProps {
   construction: Construction;
@@ -63,7 +63,7 @@ const ConstructionCard: React.FC<ConstructionCardProps> = ({
     <Card className="w-full overflow-hidden transition-all duration-200 hover:shadow-md flex flex-col">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start gap-2">
-          <CardTitle className="text-lg font-semibold line-clamp-2 flex-1">{address || "Endereço não disponível"}</CardTitle>
+          <CardTitle className="text-lg font-semibold line-clamp-2 flex-1">{companyName || "Empresa não disponível"}</CardTitle>
           <Badge variant={statusProps.variant} className={statusProps.className}>
             {statusProps.icon}
             {statusProps.label}
@@ -84,7 +84,7 @@ const ConstructionCard: React.FC<ConstructionCardProps> = ({
 
           <div className="flex items-center text-sm text-muted-foreground">
             <Building className="h-4 w-4 mr-1.5 flex-shrink-0" />
-            <span className="line-clamp-1">{companyName || "Empresa não disponível"}</span>
+            <span className="line-clamp-1">{address || "Endereço não disponível"}</span>
           </div>
 
           <div className="grid grid-cols-2 gap-2 pt-2">
@@ -124,4 +124,3 @@ const ConstructionCard: React.FC<ConstructionCardProps> = ({
 };
 
 export default ConstructionCard;
-
