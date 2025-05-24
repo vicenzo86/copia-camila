@@ -80,18 +80,17 @@ function MapComponent({
         }
         .marker-container {
           position: relative;
-          width: 32px;
-          height: 48px;
+          width: 40px;
+          height: 56px;
         }
         .marker-id {
           position: absolute;
-          top: 14px;
+          top: 20px;
           left: 50%;
           transform: translate(-50%, -50%);
-          color: #fff;
+          color: #000;
           font-weight: bold;
-          font-size: 10px;
-          text-shadow: 0px 0px 2px rgba(0,0,0,0.5);
+          font-size: 12px;
           z-index: 2;
         }
       `}</style>

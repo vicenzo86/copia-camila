@@ -172,17 +172,23 @@ export const useLeafletMap = ({
       try {
         if (!construction.latitude || !construction.longitude) return;
         
-        // Criar ícone personalizado com SVG fornecido pelo usuário
+        // Criar ícone personalizado com SVG baseado na nova imagem
         const icon = window.L.divIcon({
           className: 'custom-marker',
           html: `<div class="marker-container">
-                  <svg width="32" height="48" viewBox="0 0 32 48" xmlns="http://www.w3.org/2000/svg" fill="${getMarkerColor(construction.status)}">
-                    <path d="M16 0C8.28 0 2 6.28 2 14c0 11 14 34 14 34s14-23 14-34c0-7.72-6.28-14-14-14zm0 21a7 7 0 1 1 0-14 7 7 0 0 1 0 14z" />
+                  <svg width="40" height="56" viewBox="0 0 40 56" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Pin base com cor dinâmica e sombra -->
+                    <path d="M20 0C9 0 0 9 0 20C0 35 20 56 20 56C20 56 40 35 40 20C40 9 31 0 20 0Z" 
+                          fill="${getMarkerColor(construction.status)}" 
+                          filter="drop-shadow(0px 3px 3px rgba(0,0,0,0.3))"/>
+                    
+                    <!-- Círculo interno branco -->
+                    <circle cx="20" cy="20" r="10" fill="white"/>
                   </svg>
                   <span class="marker-id">${construction.id}</span>
                 </div>`,
-          iconSize: [32, 48],
-          iconAnchor: [16, 48]
+          iconSize: [40, 56],
+          iconAnchor: [20, 56]
         });
         
         // Criar marcador
