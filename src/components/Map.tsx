@@ -80,12 +80,12 @@ function MapComponent({
         }
         .marker-container {
           position: relative;
-          width: 40px;
-          height: 40px;
+          width: 32px;
+          height: 48px;
         }
         .marker-id {
           position: absolute;
-          top: 50%;
+          top: 14px;
           left: 50%;
           transform: translate(-50%, -50%);
           color: #fff;
