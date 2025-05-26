@@ -21,21 +21,21 @@ export const createMapMarker = ({ map, construction, onMarkerClick, mapboxgl }: 
   }
 
   // Determinar a cor do marcador com base no status
-  let markerColor = '#f59e0b'; // Amarelo/laranja padrão
+  let markerColor = '#3b82f6'; // Azul padrão
   
   if (status === 'Aprovada') {
     markerColor = '#10b981'; // Verde para aprovado
   } else if (status === 'Análise') {
     markerColor = '#f59e0b'; // Amarelo para análise
   } else if (status === 'Consulta') {
-    markerColor = '#3b82f6'; // Azul para consulta
+    markerColor = '#3b82f6'; // Escolher outra cor para consulta
   }
 
   // Create custom marker element
   const el = document.createElement('div');
   el.className = 'marker';
-  el.style.width = '20px';
-  el.style.height = '20px';
+  el.style.width = '15px';
+  el.style.height = '15px';
   el.style.borderRadius = '50%';
   el.style.background = markerColor;
   el.style.display = 'flex';
