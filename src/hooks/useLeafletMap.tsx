@@ -184,8 +184,11 @@ export const useLeafletMap = ({
                     
                     <!-- Círculo interno branco -->
                     <circle cx="20" cy="20" r="12" fill="white"/>
+                    <!-- Texto do número centralizado -->
+                    <text x="20" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="black">${construction.id}</text>			
+			
                   </svg>
-                  <span class="marker-id" style="font-size: 14px; font-weight: bold;">${construction.id}</span>
+                 
                 </div>`,
           iconSize: [30, 42],
           iconAnchor: [15, 42]
