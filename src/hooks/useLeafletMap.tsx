@@ -176,19 +176,19 @@ export const useLeafletMap = ({
         const icon = window.L.divIcon({
           className: 'custom-marker',
           html: `<div class="marker-container">
-                  <svg width="40" height="56" viewBox="0 0 40 56" xmlns="http://www.w3.org/2000/svg">
+                  <svg width="30" height="42" viewBox="0 0 40 56" xmlns="http://www.w3.org/2000/svg">
                     <!-- Pin base com cor dinâmica e sombra -->
                     <path d="M20 0C9 0 0 9 0 20C0 35 20 56 20 56C20 56 40 35 40 20C40 9 31 0 20 0Z" 
                           fill="${getMarkerColor(construction.status)}" 
                           filter="drop-shadow(0px 3px 3px rgba(0,0,0,0.3))"/>
                     
                     <!-- Círculo interno branco -->
-                    <circle cx="20" cy="20" r="10" fill="white"/>
+                    <circle cx="20" cy="20" r="12" fill="white"/>
                   </svg>
-                  <span class="marker-id">${construction.id}</span>
+                  <span class="marker-id" style="font-size: 14px; font-weight: bold;">${construction.id}</span>
                 </div>`,
-          iconSize: [40, 56],
-          iconAnchor: [20, 56]
+          iconSize: [30, 42],
+          iconAnchor: [15, 42]
         });
         
         // Criar marcador
