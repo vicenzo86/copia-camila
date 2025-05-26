@@ -34,8 +34,8 @@ export const createMapMarker = ({ map, construction, onMarkerClick, mapboxgl }: 
   // Create custom marker element
   const el = document.createElement('div');
   el.className = 'marker';
-  el.style.width = '28px';
-  el.style.height = '28px';
+  el.style.width = '20px';
+  el.style.height = '20px';
   el.style.borderRadius = '50%';
   el.style.background = markerColor;
   el.style.display = 'flex';
