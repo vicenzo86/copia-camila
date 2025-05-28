@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -8,57 +8,62 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/components/ui/use-toast';
-import { Eye, EyeOff, Lock, User } from 'lucide-react';
+import { Eye, EyeOff, Lock, User, Mail } from 'lucide-react';
 import useAuth from '@/hooks/useAuth';
-import { Link } from 'react-router-dom';
 
-const loginFormSchema = z.object({
+const registerFormSchema = z.object({
   email: z.string().email({ message: 'Email inválido' }),
   password: z.string().min(6, { message: 'A senha deve ter pelo menos 6 caracteres' }),
+  confirmPassword: z.string().min(6, { message: 'A senha deve ter pelo menos 6 caracteres' }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "As senhas não coincidem",
+  path: ["confirmPassword"],
 });
 
-type LoginFormValues = z.infer<typeof loginFormSchema>;
+type RegisterFormValues = z.infer<typeof registerFormSchema>;
 
-const Login = () => {
+const Register = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signUp } = useAuth();
   
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginFormSchema),
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerFormSchema),
     defaultValues: {
       email: '',
       password: '',
+      confirmPassword: '',
     },
   });
 
-  const onSubmit = async (data: LoginFormValues) => {
+  const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
     
     try {
-      const { error } = await signIn(data.email, data.password);
+      const { error } = await signUp(data.email, data.password);
       
       if (error) {
         toast({
-          title: 'Falha no login',
-          description: error.message || 'Email ou senha incorretos. Tente novamente.',
+          title: 'Falha no cadastro',
+          description: error.message || 'Não foi possível criar sua conta. Tente novamente.',
           variant: 'destructive',
         });
       } else {
         toast({
-          title: 'Login bem-sucedido',
-          description: 'Bem-vindo ao Obra Alerta Maps!',
+          title: 'Cadastro realizado com sucesso',
+          description: 'Verifique seu email para confirmar sua conta.',
         });
         
-        // Redirect to filter page after successful login
-        navigate('/filter');
+        // Redirect to confirmation page
+        navigate('/register-confirmation');
       }
     } catch (error) {
       toast({
-        title: 'Erro no login',
-        description: 'Ocorreu um erro ao tentar fazer login. Tente novamente mais tarde.',
+        title: 'Erro no cadastro',
+        description: 'Ocorreu um erro ao tentar criar sua conta. Tente novamente mais tarde.',
         variant: 'destructive',
       });
     } finally {
@@ -70,9 +75,9 @@ const Login = () => {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold">Obra Alerta Maps</CardTitle>
+          <CardTitle className="text-2xl font-bold">Criar Conta</CardTitle>
           <CardDescription>
-            Entre com suas credenciais para acessar o sistema
+            Preencha os dados abaixo para criar sua conta
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -86,7 +91,7 @@ const Login = () => {
                     <FormLabel>Email</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input 
                           placeholder="seu@email.com" 
                           className="pl-10" 
@@ -134,18 +139,50 @@ const Login = () => {
                 )}
               />
               
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirmar Senha</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input 
+                          type={showConfirmPassword ? 'text' : 'password'} 
+                          placeholder="••••••••" 
+                          className="pl-10" 
+                          {...field} 
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-0 top-0 h-10 w-10"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Entrando...' : 'Entrar'}
+                {isLoading ? 'Cadastrando...' : 'Cadastrar'}
               </Button>
             </form>
           </Form>
           
           <div className="mt-4 text-center text-sm">
-            <p className="text-muted-foreground mb-2">
-              Não tem uma conta? <Link to="/register" className="text-primary hover:underline">Cadastre-se</Link>
-            </p>
             <p className="text-muted-foreground">
-              <Link to="/forgot-password" className="text-primary hover:underline">Esqueceu sua senha?</Link>
+              Já tem uma conta? <Link to="/login" className="text-primary hover:underline">Faça login</Link>
             </p>
           </div>
         </CardContent>
@@ -159,4 +196,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;

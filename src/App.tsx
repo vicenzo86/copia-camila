@@ -8,7 +8,12 @@ import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
-import FilterPage from "./pages/FilterPage"; // Import FilterPage
+import Register from "./pages/Register";
+import RegisterConfirmation from "./pages/RegisterConfirmation";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import AuthCallback from "./pages/AuthCallback";
+import FilterPage from "./pages/FilterPage";
 import NotFound from "./pages/NotFound";
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -20,7 +25,15 @@ const App = () => (
       <AuthProvider>
         <TooltipProvider>
           <Routes>
+            {/* Rotas públicas de autenticação */}
             <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/register-confirmation" element={<RegisterConfirmation />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            
+            {/* Rotas protegidas (requerem autenticação) */}
             <Route 
               path="/filter" 
               element={
@@ -48,4 +61,3 @@ const App = () => (
 );
 
 export default App;
-
