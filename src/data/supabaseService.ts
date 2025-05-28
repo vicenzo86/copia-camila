@@ -170,7 +170,12 @@ export const filterConstructions = async (
       }
     }
 
-    if (filter.city) {
+    // Filtro para múltiplas cidades
+    if (filter.cities && filter.cities.length > 0) {
+      query = query.in("\"Cidade\"", filter.cities);
+    }
+    // Manter compatibilidade com filtro de cidade única
+    else if (filter.city) {
       query = query.eq("\"Cidade\"", filter.city);
     }
 

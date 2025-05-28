@@ -101,20 +101,16 @@ const Index = () => {
   // Processar parâmetros da URL para aplicar filtros iniciais
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const cityParam = params.get('city');
+    const citiesParams = params.getAll('cities');
     const yearParam = params.get('year');
-    const statusParam = params.get('status');
     
     // Aplicar filtros da URL, se existirem
-    if (cityParam || yearParam || statusParam) {
+    if (citiesParams.length > 0 || yearParam) {
       const newFilter: ConstructionFilter = { status: 'all' };
       
-      if (cityParam) {
-        newFilter.city = cityParam;
-      }
-      
-      if (statusParam) {
-        newFilter.status = statusParam as StatusValue;
+      if (citiesParams.length > 0) {
+        // Armazenar múltiplas cidades para filtro
+        newFilter.cities = citiesParams;
       }
       
       if (yearParam) {
@@ -126,11 +122,6 @@ const Index = () => {
       }
       
       setFilter(newFilter);
-      
-      // Se tiver status, atualizar a categoria selecionada
-      if (statusParam === 'Aprovada' || statusParam === 'Consulta' || statusParam === 'Análise') {
-        setSelectedCategory(statusParam);
-      }
     }
     
     fetchInitialData();

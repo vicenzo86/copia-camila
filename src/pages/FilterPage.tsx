@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getCities, getLicenseTypes } from '@/data/supabaseService';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { getCities } from '@/data/supabaseService';
+import { Loader2, X } from 'lucide-react';
 
 const FilterPage: React.FC = () => {
   const navigate = useNavigate();
   const [cities, setCities] = useState<string[]>([]);
   const [years, setYears] = useState<string[]>([]);
-  const [statusOptions, setStatusOptions] = useState<string[]>(['Aprovada', 'Análise', 'Consulta']);
-  const [selectedCity, setSelectedCity] = useState<string>('');
+  const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [selectedYear, setSelectedYear] = useState<string>('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [isDataLoading, setIsDataLoading] = useState<boolean>(true);
 
@@ -36,8 +33,6 @@ const FilterPage: React.FC = () => {
         
         // Gerar lista de anos
         setYears(generateYears());
-        
-        // Opções de status já definidas no estado inicial
       } catch (error) {
         console.error('Erro ao carregar dados iniciais:', error);
       } finally {
@@ -48,6 +43,17 @@ const FilterPage: React.FC = () => {
     loadInitialData();
   }, []);
 
+  const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    if (value && !selectedCities.includes(value)) {
+      setSelectedCities([...selectedCities, value]);
+    }
+  };
+
+  const handleRemoveCity = (city: string) => {
+    setSelectedCities(selectedCities.filter(c => c !== city));
+  };
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
@@ -55,16 +61,14 @@ const FilterPage: React.FC = () => {
     // Construir query params para filtros selecionados
     const params = new URLSearchParams();
     
-    if (selectedCity) {
-      params.append('city', selectedCity);
-    }
+    // Adicionar múltiplas cidades como parâmetros separados
+    selectedCities.forEach(city => {
+      params.append('cities', city);
+    });
     
+    // Adicionar ano se selecionado
     if (selectedYear) {
       params.append('year', selectedYear);
-    }
-    
-    if (selectedStatus) {
-      params.append('status', selectedStatus);
     }
     
     // Navegar para a página principal com os filtros como query params
@@ -88,19 +92,47 @@ const FilterPage: React.FC = () => {
         ) : (
           <form onSubmit={handleSubmit}>
             <div className="mb-6">
-              <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">Cidade</label>
+              <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">Cidades</label>
               <select
                 id="city"
                 name="city"
-                value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
+                value=""
+                onChange={handleCityChange}
                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               >
                 <option value="">Selecione uma cidade</option>
-                {cities.map((city) => (
-                  <option key={city} value={city}>{city}</option>
-                ))}
+                {cities
+                  .filter(city => !selectedCities.includes(city))
+                  .map((city) => (
+                    <option key={city} value={city}>{city}</option>
+                  ))
+                }
               </select>
+              
+              {/* Exibir cidades selecionadas como tags */}
+              <div className="mt-3 flex flex-wrap gap-2">
+                {selectedCities.map(city => (
+                  <div 
+                    key={city} 
+                    className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center text-sm"
+                  >
+                    {city}
+                    <button 
+                      type="button" 
+                      onClick={() => handleRemoveCity(city)}
+                      className="ml-2 text-blue-600 hover:text-blue-800"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              
+              {selectedCities.length > 0 && (
+                <p className="text-xs text-gray-500 mt-2">
+                  {selectedCities.length} {selectedCities.length === 1 ? 'cidade selecionada' : 'cidades selecionadas'}
+                </p>
+              )}
             </div>
 
             <div className="mb-6">
@@ -119,27 +151,11 @@ const FilterPage: React.FC = () => {
               </select>
             </div>
 
-            <div className="mb-6">
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-              <select
-                id="status"
-                name="status"
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              >
-                <option value="">Selecione um status</option>
-                {statusOptions.map((status) => (
-                  <option key={status} value={status}>{status}</option>
-                ))}
-              </select>
-            </div>
-
             <div className="mt-8">
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex justify-center items-center"
+                disabled={loading || (selectedCities.length === 0 && !selectedYear)}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex justify-center items-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>

@@ -16,3 +16,21 @@ export interface Construction {
   "Área Construída"?: number;
   "Área do Terreno"?: number;
 }
+
+export interface ConstructionFilter {
+  status?: StatusValue;
+  dateRange?: {
+    start?: string;
+    end?: string;
+  };
+  city?: string;
+  cities?: string[]; // Adicionado suporte para múltiplas cidades
+  licenseType?: string;
+  search?: string;
+}
+
+export interface CategoryOption {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+}
