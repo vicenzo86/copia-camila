@@ -247,7 +247,7 @@ export const useLeafletMap = ({
       case 'comercial':
         return '#F44336'; // Vermelho
       default:
-        return '#999999'; // Cinza
+      return '#4285F4'; // Azul Google Maps
     }
   }
 
