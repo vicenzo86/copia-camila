@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Building, Calendar, Home, MapPin, Search, Loader2, CheckCircle, HelpCircle, AlertTriangle } from 'lucide-react';
 import { getAllConstructions, getCities as getSupabaseCities, getLicenseTypes as getSupabaseLicenseTypes, filterConstructions as filterSupabaseConstructions } from '@/data/supabaseService';
 import useAuth from '@/hooks/useAuth';
+import { useLocation } from 'react-router-dom';
 
 const Index = () => {
   const { user, logout } = useAuth();
@@ -38,6 +39,9 @@ const Index = () => {
     { id: 'Comercial', label: 'Comercial', icon: <Building className="h-4 w-4" /> },
   ];
 
+  // Obter parâmetros da URL
+  const location = useLocation();
+  
   // Função para buscar dados iniciais - modificada para garantir que loading seja sempre finalizado
   const fetchInitialData = useCallback(async () => {
     setInitialLoading(true); // Usar initialLoading em vez de loading
@@ -94,9 +98,43 @@ const Index = () => {
     }
   }, []);
 
+  // Processar parâmetros da URL para aplicar filtros iniciais
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const cityParam = params.get('city');
+    const yearParam = params.get('year');
+    const statusParam = params.get('status');
+    
+    // Aplicar filtros da URL, se existirem
+    if (cityParam || yearParam || statusParam) {
+      const newFilter: ConstructionFilter = { status: 'all' };
+      
+      if (cityParam) {
+        newFilter.city = cityParam;
+      }
+      
+      if (statusParam) {
+        newFilter.status = statusParam as StatusValue;
+      }
+      
+      if (yearParam) {
+        // Filtrar por ano, considerando que o campo Data contém o ano
+        newFilter.dateRange = {
+          start: `${yearParam}-01-01`,
+          end: `${yearParam}-12-31`
+        };
+      }
+      
+      setFilter(newFilter);
+      
+      // Se tiver status, atualizar a categoria selecionada
+      if (statusParam === 'Aprovada' || statusParam === 'Consulta' || statusParam === 'Análise') {
+        setSelectedCategory(statusParam);
+      }
+    }
+    
     fetchInitialData();
-  }, [fetchInitialData]);
+  }, [fetchInitialData, location.search]);
 
   // Função para aplicar filtros - modificada para garantir que loading seja sempre finalizado
   const applyFilters = useCallback(async () => {
