@@ -233,7 +233,22 @@ export const useLeafletMap = ({
 
   // Função auxiliar para determinar a cor do marcador com base no status
   function getMarkerColor(status: string | undefined): string {
-    return '#4285F4'; // Google Maps Blue for all markers
+    if (!status) return '#999999';
+    
+    switch (status.toLowerCase()) {
+      case 'aprovada':
+        return '#4CAF50'; // Verde
+      case 'consulta':
+        return '#2196F3'; // Azul
+      case 'análise':
+        return '#FF9800'; // Laranja
+      case 'residencial':
+        return '#9C27B0'; // Roxo
+      case 'comercial':
+        return '#F44336'; // Vermelho
+      default:
+        return '#999999'; // Cinza
+    }
   }
 
   // Adicionar um efeito para recalcular o tamanho do mapa quando a janela for redimensionada
