@@ -13,7 +13,7 @@ interface MarkerOptions {
  * @param options Options for creating the marker
  * @returns The created Mapbox marker
  */
-export const createMapMarker = ({ map, construction, onMarkerClick, mapboxgl }: MarkerOptions): any => {
+export const createMapMarker = async ({ map, construction, onMarkerClick, mapboxgl }: MarkerOptions): Promise<any> => {
   const { latitude, longitude, status } = construction;
   
   if (!latitude || !longitude) {
@@ -32,33 +32,39 @@ export const createMapMarker = ({ map, construction, onMarkerClick, mapboxgl }: 
   }
 
   // Create custom marker element
-  const el = document.createElement('div');
+  const el = document.createElement('img') as HTMLImageElement;
+  // el.src will be set dynamically after fetching and modifying the SVG
   el.className = 'marker';
-  el.style.width = '15px';
-  el.style.height = '15px';
-  el.style.borderRadius = '50%';
-  el.style.background = markerColor;
-  el.style.display = 'flex';
-  el.style.alignItems = 'center';
-  el.style.justifyContent = 'center';
-  el.style.color = 'white';
-  el.style.fontWeight = 'bold';
-  el.style.fontSize = '14px';
-  el.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)';
+  el.style.width = '40px';
+  el.style.height = '56px';
   el.style.cursor = 'pointer';
-  el.style.border = '3px solid white';
-  
-  // Criar o marcador
-  const marker = new mapboxgl.Marker(el)
-    .setLngLat([longitude, latitude])
-    .addTo(map);
 
-  // Adicionar evento de clique
-  el.addEventListener('click', () => {
-    if (onMarkerClick) {
-      onMarkerClick(construction);
+  try {
+    const response = await fetch('/icons/marker-new.svg');
+    if (!response.ok) {
+      throw new Error(`Failed to fetch SVG: ${response.statusText}`);
     }
-  });
+    const svgText = await response.text();
+    const modifiedSvgText = svgText.replace('fill="#FF0000"', `fill="${markerColor}"`);
+    el.src = "data:image/svg+xml;base64," + btoa(modifiedSvgText);
 
-  return marker;
+    // Criar o marcador APÓS o src da imagem ser definido
+    const marker = new mapboxgl.Marker(el)
+      .setLngLat([longitude, latitude])
+      .addTo(map);
+
+    // Adicionar evento de clique
+    el.addEventListener('click', () => {
+      if (onMarkerClick) {
+        onMarkerClick(construction);
+      }
+    });
+
+    return marker;
+  } catch (error) {
+    console.error("Error creating dynamic marker:", error);
+    // Fallback or error handling: Optionally create a default marker or return null
+    // For now, re-throw to indicate failure or return a promise that rejects
+    throw error; 
+  }
 };
