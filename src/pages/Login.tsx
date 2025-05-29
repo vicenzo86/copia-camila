@@ -49,7 +49,7 @@ const Login = () => {
       } else {
         toast({
           title: 'Login bem-sucedido',
-          description: 'Bem-vindo ao Obra Alerta Maps!',
+          description: 'Bem-vindo ao Constru-Leads!',
         });
         
         // Redirect to filter page after successful login
@@ -70,7 +70,8 @@ const Login = () => {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold">Obra Alerta Maps</CardTitle>
+          <img src="/icons/logo.png" alt="Constru-Leads Logo" className="w-20 h-20 mx-auto mb-4" />
+          <CardTitle className="text-2xl font-bold">Constru-Leads</CardTitle>
           <CardDescription>
             Entre com suas credenciais para acessar o sistema
           </CardDescription>
@@ -151,7 +152,7 @@ const Login = () => {
         </CardContent>
         <CardFooter className="flex flex-col">
           <p className="text-center text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Obra Alerta Maps. Todos os direitos reservados.
+            © {new Date().getFullYear()} Constru-Leads. Todos os direitos reservados.
           </p>
         </CardFooter>
       </Card>
