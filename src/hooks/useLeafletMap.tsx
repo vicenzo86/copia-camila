@@ -241,7 +241,7 @@ export const useLeafletMap = ({
       case 'consulta':
         return '#2196F3'; // Azul
       case 'análise':
-        return '#FF9800'; // Laranja
+        return '#2196F3'; // Laranja
       case 'residencial':
         return '#9C27B0'; // Roxo
       case 'comercial':
