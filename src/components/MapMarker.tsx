@@ -35,8 +35,8 @@ export const createMapMarker = async ({ map, construction, onMarkerClick, mapbox
   const el = document.createElement('img') as HTMLImageElement;
   // el.src will be set dynamically after fetching and modifying the SVG
   el.className = 'marker';
-  el.style.width = '50px';
-  el.style.height = '70px';
+  el.style.width = '60px';
+  el.style.height = '84px';
   el.style.cursor = 'pointer';
 
   try {
