@@ -35,8 +35,8 @@ export const createMapMarker = async ({ map, construction, onMarkerClick, mapbox
   const el = document.createElement('img') as HTMLImageElement;
   // el.src will be set dynamically after fetching and modifying the SVG
   el.className = 'marker';
-  el.style.width = '40px';
-  el.style.height = '56px';
+  el.style.width = '50px';
+  el.style.height = '70px';
   el.style.cursor = 'pointer';
 
   try {
@@ -65,6 +65,6 @@ export const createMapMarker = async ({ map, construction, onMarkerClick, mapbox
     console.error("Error creating dynamic marker:", error);
     // Fallback or error handling: Optionally create a default marker or return null
     // For now, re-throw to indicate failure or return a promise that rejects
-    throw error; 
+    throw error;
   }
 };
