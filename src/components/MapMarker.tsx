@@ -21,15 +21,16 @@ export const createMapMarker = async ({ map, construction, onMarkerClick, mapbox
   }
 
   // Determinar a cor do marcador com base no status
-  let markerColor = '#4285F4'; // Azul padrão
-  
-  if (status === 'Aprovada') {
-    markerColor = '#10b981'; // Verde para aprovado
-  } else if (status === 'Análise') {
-    markerColor = '#397eb2'; // Azul para análise
-  } else if (status === 'Consulta') {
-    markerColor = '#4285F4'; // Azul para consulta
-  }
+  let markerColor = '#397eb2'; // Cor padrão e para todos os status
+
+  // O código if/else if anterior para status pode ser removido ou comentado
+  // if (status === 'Aprovada') {
+  //   markerColor = '#397eb2';
+  // } else if (status === 'Análise') {
+  //   markerColor = '#397eb2';
+  // } else if (status === 'Consulta') {
+  //   markerColor = '#397eb2';
+  // }
 
   // Create custom marker element
   const el = document.createElement('img') as HTMLImageElement;
@@ -40,7 +41,7 @@ export const createMapMarker = async ({ map, construction, onMarkerClick, mapbox
   el.style.cursor = 'pointer';
 
   try {
-    const response = await fetch('/icons/marker-new.svg');
+    const response = await fetch('/icons/marker.svg');
     if (!response.ok) {
       throw new Error(`Failed to fetch SVG: ${response.statusText}`);
     }
@@ -52,7 +53,7 @@ export const createMapMarker = async ({ map, construction, onMarkerClick, mapbox
 
     // Add construction ID to the SVG marker
     const idText = construction.id ? String(construction.id).substring(0, 6) : '';
-    const textElement = `<text x="30" y="30" dominant-baseline="middle" text-anchor="middle" fill="#000000" font-size="8px" font-family="Arial" font-weight="bold">${idText}</text>`;
+    const textElement = `<text x="30" y="15" text-anchor="middle" fill="#FFFFFF" font-size="8px" font-family="Arial" font-weight="bold">${idText}</text>`;
 
     // Insert the text element before the closing </svg> tag
     const closingSvgTagIndex = modifiedSvgText.lastIndexOf('</svg>');
