@@ -47,9 +47,12 @@ export const createMapMarker = async ({ map, construction, onMarkerClick, mapbox
     const svgText = await response.text();
     let modifiedSvgText = svgText.replace('fill="#FF0000"', `fill="${markerColor}"`);
 
+    // Modify SVG circle radius
+    modifiedSvgText = modifiedSvgText.replace('r="15"', 'r="18"');
+
     // Add construction ID to the SVG marker
     const idText = construction.id ? String(construction.id).substring(0, 6) : '';
-    const textElement = `<text x="50%" y="45%" dominant-baseline="middle" text-anchor="middle" fill="#FFFFFF" font-size="10px" font-family="Arial" font-weight="bold">${idText}</text>`;
+    const textElement = `<text x="30" y="30" dominant-baseline="middle" text-anchor="middle" fill="#000000" font-size="8px" font-family="Arial" font-weight="bold">${idText}</text>`;
 
     // Insert the text element before the closing </svg> tag
     const closingSvgTagIndex = modifiedSvgText.lastIndexOf('</svg>');
