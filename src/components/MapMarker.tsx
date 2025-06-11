@@ -26,7 +26,7 @@ export const createMapMarker = async ({ map, construction, onMarkerClick, mapbox
   if (status === 'Aprovada') {
     markerColor = '#10b981'; // Verde para aprovado
   } else if (status === 'Análise') {
-    markerColor = '#4285F4'; // Azul para análise
+    markerColor = '#397eb2'; // Azul para análise
   } else if (status === 'Consulta') {
     markerColor = '#4285F4'; // Azul para consulta
   }
