@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale/pt-BR';
-import { Building2, CalendarDays, MapPin, FileText, ExternalLink, Briefcase, Info, CheckCircle, HelpCircle, AlertTriangle } from 'lucide-react';
+import { Building2, CalendarDays, MapPin, FileText, ExternalLink, Briefcase, Info, CheckCircle, HelpCircle, AlertTriangle, Ruler, Layers } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -161,6 +161,9 @@ const ConstructionDetails: React.FC<ConstructionDetailsProps> = ({ construction,
             </Badge>
             <span className="text-sm text-gray-600">{primaryLicenseInfo}</span>
           </div>
+          {construction.id && (
+            <p className="text-sm text-gray-500 mt-1">ID da Obra: {construction.id}</p>
+          )}
         </DialogHeader>
         
         <div className="px-4 pb-4 space-y-3">
@@ -178,6 +181,22 @@ const ConstructionDetails: React.FC<ConstructionDetailsProps> = ({ construction,
             </div>
           </section>
           
+          <Separator className="my-2" />
+
+          <section>
+            <h4 className="text-xs font-medium text-gray-500 mb-1">Detalhes da Obra</h4>
+            <div className="space-y-1">
+              <div className="flex items-center text-gray-700">
+                <Ruler className="h-3.5 w-3.5 mr-2 text-gray-400 flex-shrink-0" />
+                <span className="text-xs">Área Construída: {constructionArea ? `${constructionArea} m²` : "N/A"}</span>
+              </div>
+              <div className="flex items-center text-gray-700">
+                <Layers className="h-3.5 w-3.5 mr-2 text-gray-400 flex-shrink-0" />
+                <span className="text-xs">Área do Terreno: {landArea ? `${landArea} m²` : "N/A"}</span>
+              </div>
+            </div>
+          </section>
+
           <Separator className="my-2" />
           
           <section>

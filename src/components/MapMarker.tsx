@@ -45,7 +45,18 @@ export const createMapMarker = async ({ map, construction, onMarkerClick, mapbox
       throw new Error(`Failed to fetch SVG: ${response.statusText}`);
     }
     const svgText = await response.text();
-    const modifiedSvgText = svgText.replace('fill="#FF0000"', `fill="${markerColor}"`);
+    let modifiedSvgText = svgText.replace('fill="#FF0000"', `fill="${markerColor}"`);
+
+    // Add construction ID to the SVG marker
+    const idText = construction.id ? String(construction.id).substring(0, 6) : '';
+    const textElement = `<text x="50%" y="45%" dominant-baseline="middle" text-anchor="middle" fill="#FFFFFF" font-size="10px" font-family="Arial" font-weight="bold">${idText}</text>`;
+
+    // Insert the text element before the closing </svg> tag
+    const closingSvgTagIndex = modifiedSvgText.lastIndexOf('</svg>');
+    if (closingSvgTagIndex !== -1) {
+      modifiedSvgText = modifiedSvgText.substring(0, closingSvgTagIndex) + textElement + modifiedSvgText.substring(closingSvgTagIndex);
+    }
+
     el.src = "data:image/svg+xml;base64," + btoa(modifiedSvgText);
 
     // Criar o marcador APÓS o src da imagem ser definido
