@@ -23,7 +23,7 @@ export const createMapMarker = async ({ map, construction, onMarkerClick, mapbox
   // Determinar a cor do marcador com base no status
   let markerColor = '#397eb2'; // Cor padrão e para todos os status
 
-  // O código if/else if anterior para status pode ser removido ou comentado
+  // O código if/else if anterior para status foi removido ou comentado, conforme a tentativa anterior bem-sucedida.
   // if (status === 'Aprovada') {
   //   markerColor = '#397eb2';
   // } else if (status === 'Análise') {
