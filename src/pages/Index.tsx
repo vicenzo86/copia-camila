@@ -248,7 +248,7 @@ const Index = () => {
       
       <div className="container px-4 py-6 mx-auto max-w-7xl flex-1 flex flex-col relative">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Obra Alerta Maps</h1>
+          <h1 className="text-3xl font-bold">Construleads</h1>
           <div className="flex items-center gap-2">
             {user?.email && <span className="text-sm text-muted-foreground mr-2">{user.email}</span>}
             <Button variant="outline" size="sm" onClick={logout}>
