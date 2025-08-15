@@ -1,13 +1,21 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Credenciais atualizadas fornecidas pelo usuário
-const supabaseUrl = "https://kjgfdmyauopdoxumvqxy.supabase.co";
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqZ2ZkbXlhdW9wZG94dW12cXh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcxMDYzNjYsImV4cCI6MjA2MjY4MjM2Nn0.r2rw2USkNlFLFoZtqDJuyRWRmtCrzq1WVVB7_0fJxtI";
+// As credenciais do Supabase são carregadas a partir de variáveis de ambiente
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Criação do cliente Supabase com tratamento de erro
+// Verificação para garantir que as variáveis de ambiente foram carregadas
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error("As variáveis de ambiente VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY são obrigatórias.");
+}
+
+// Criação do cliente Supabase
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    persistSession: false // Evita problemas de sessão em ambientes serverless
+    // A persistência da sessão é recomendada para a maioria das aplicações web.
+    // Desabilitar (false) pode ser útil em cenários específicos como serverless,
+    // mas para uma SPA padrão, o ideal é manter a sessão persistida.
+    persistSession: true,
   }
 });
 
