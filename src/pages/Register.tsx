@@ -43,7 +43,9 @@ const Register = () => {
     setIsLoading(true);
     
     try {
+      console.log("Calling signUp...");
       const { error } = await signUp(data.email, data.password);
+      console.log("signUp returned, error:", error);
       
       if (error) {
         toast({
