@@ -48,18 +48,42 @@ const Index = () => {
     setError(null);
     
     try {
-      // Usando Promise.all para garantir que todas as promessas sejam resolvidas
-      const [constructions, cities, licenseTypes] = await Promise.all([
+      // Usando Promise.allSettled para garantir que todas as promessas sejam resolvidas
+      // mesmo que algumas falhem
+      const results = await Promise.allSettled([
         getAllConstructions(),
         getSupabaseCities(),
         getSupabaseLicenseTypes(),
       ]);
       
-      setAllConstructions(constructions);
-      setDisplayedConstructions(constructions);
-      setCities(cities);
-      setLicenseTypes(licenseTypes);
+      // Processando os resultados individualmente
+      if (results[0].status === 'fulfilled') {
+        setAllConstructions(results[0].value);
+        setDisplayedConstructions(results[0].value);
+      } else {
+        console.error("Erro ao carregar construções:", results[0].reason);
+        setAllConstructions([]);
+        setDisplayedConstructions([]);
+      }
+
+      if (results[1].status === 'fulfilled') {
+        setCities(results[1].value);
+      } else {
+        console.error("Erro ao carregar cidades:", results[1].reason);
+        setCities([]);
+      }
       
+      if (results[2].status === 'fulfilled') {
+        setLicenseTypes(results[2].value);
+      } else {
+        console.error("Erro ao carregar tipos de licença:", results[2].reason);
+        setLicenseTypes([]);
+      }
+
+      // Verificar se todas as promessas falharam para mostrar erro geral
+      if (results.every(result => result.status === 'rejected')) {
+        setError("Falha ao carregar dados. Tente novamente mais tarde.");
+      }
     } catch (err) {
       console.error("Erro ao carregar dados iniciais:", err);
       setError("Falha ao carregar dados. Tente novamente mais tarde.");
