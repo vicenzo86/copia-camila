@@ -8,7 +8,7 @@ import { Construction, ConstructionFilter, CategoryOption, StatusValue } from '@
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Building, Calendar, Home, MapPin, Search, Loader2, CheckCircle, HelpCircle, AlertTriangle } from 'lucide-react';
-import { getAllConstructions, getCities as getSupabaseCities, getLicenseTypes as getSupabaseLicenseTypes, filterConstructions as filterSupabaseConstructions } from '@/data/supabaseService';
+import { getConstructions, getCities as getSupabaseCities, getLicenseTypes as getSupabaseLicenseTypes } from '@/data/supabaseService';
 import useAuth from '@/hooks/useAuth';
 import { useLocation } from 'react-router-dom';
 
@@ -51,7 +51,7 @@ const Index = () => {
       // Usando Promise.allSettled para garantir que todas as promessas sejam resolvidas
       // mesmo que algumas falhem
       const results = await Promise.allSettled([
-        getAllConstructions(),
+        getConstructions(),
         getSupabaseCities(),
         getSupabaseLicenseTypes(),
       ]);
@@ -136,7 +136,7 @@ const Index = () => {
     setError(null);
     
     try {
-      let currentFilter: ConstructionFilter = {
+      const currentFilter: ConstructionFilter = {
         ...filter,
         search: searchQuery
       };
@@ -149,7 +149,7 @@ const Index = () => {
         }
       }
       
-      const supabaseFiltered = await filterSupabaseConstructions(currentFilter);
+      const supabaseFiltered = await getConstructions(currentFilter);
       setDisplayedConstructions(supabaseFiltered);
     } catch (err) {
       console.error("Erro ao filtrar construções:", err);

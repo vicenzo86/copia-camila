@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabaseClient";
-import { Construction, ConstructionFilter, StatusValue } from "@/types/construction";
+import { Construction, ConstructionFilter, StatusValue, SupabaseConstruction } from "@/types/construction";
 
 // Nome da view no schema public do Supabase
 const VIEW_NAME = "constructions_view";
@@ -29,7 +29,7 @@ const createEmptyConstruction = (): Construction => {
  * Mapeia os dados do Supabase para o tipo Construction
  * Inclui tratamento de valores nulos ou indefinidos
  */
-const mapSupabaseDataToConstruction = (data: any): Construction => {
+const mapSupabaseDataToConstruction = (data: SupabaseConstruction): Construction => {
   if (!data) return createEmptyConstruction();
   
   return {
@@ -85,7 +85,7 @@ export async function getConstructions(filters?: ConstructionFilter): Promise<Co
       }
     }
 
-    const { data, error } = await query;
+    const { data, error } = await query.limit(10000);
 
     if (error) {
       console.error("Erro ao buscar construções:", error);
@@ -135,7 +135,6 @@ export async function getCities(): Promise<string[]> {
       .select("Cidade")
       .not('Cidade', 'is', null)
       .not('Cidade', 'eq', '')
-      .limit(10000)
       .order('Cidade', { ascending: true });
 
     if (error) {
