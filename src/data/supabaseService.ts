@@ -50,77 +50,6 @@ const mapSupabaseDataToConstruction = (data: any): Construction => {
 };
 
 /**
- * Busca todas as construções da view
- */
-export async function getAllConstructions(): Promise<Construction[]> {
-  try {
-    const { data, error } = await supabase.from(VIEW_NAME).select("*");
-
-    if (error) {
-      console.error("Erro ao buscar todas as construções:", error);
-      throw error;
-    }
-
-    return (data || []).map(mapSupabaseDataToConstruction);
-  } catch (error) {
-    console.error("Erro em getAllConstructions:", error);
-    throw error;
-  }
-}
-
-/**
- * Filtra construções com base nos critérios fornecidos
- */
-export async function filterConstructions(filters: ConstructionFilter): Promise<Construction[]> {
-  try {
-    let query = supabase.from(VIEW_NAME).select("*");
-
-    // Filtrar por status, exceto 'all'
-    if (filters.status && filters.status !== 'all') {
-      query = query.eq('status', filters.status);
-    }
-
-    // Filtro de busca por texto em múltiplos campos
-    if (filters.search) {
-      const searchPattern = `%${filters.search}%`;
-      query = query.or(
-        `"Nome da Empresa".ilike.${searchPattern},` +
-        `"Endereço".ilike.${searchPattern},` +
-        `"CNPJ".ilike.${searchPattern}`
-      );
-    }
-
-    // Filtrar por múltiplas cidades
-    if (filters.cities && filters.cities.length > 0) {
-      query = query.in("Cidade", filters.cities);
-    }
-
-    // Filtrar por data
-    if (filters.dateRange) {
-      if (filters.dateRange.start) {
-        query = query.gte("Data", filters.dateRange.start);
-      }
-      if (filters.dateRange.end) {
-        query = query.lte("Data", filters.dateRange.end);
-      }
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      console.error("Erro ao filtrar construções:", error);
-      throw error;
-    }
-
-    return (data || []).map(mapSupabaseDataToConstruction);
-  } catch (error) {
-    console.error("Erro em filterConstructions:", error);
-    throw error;
-  }
-}
-
-
-/**
  * Busca construções na view com filtros opcionais
  */
 export async function getConstructions(filters?: ConstructionFilter): Promise<Construction[]> {
@@ -206,6 +135,7 @@ export async function getCities(): Promise<string[]> {
       .select("Cidade")
       .not('Cidade', 'is', null)
       .not('Cidade', 'eq', '')
+      .limit(10000)
       .order('Cidade', { ascending: true });
 
     if (error) {
